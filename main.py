@@ -34,7 +34,7 @@ logging.basicConfig(
 
 def get_access_token():
     """Get the access token from Spotify API"""
-    logging.info("Getting the access token...")
+    logging.info("Authorization process started - Getting access token")
     print("---> Authorization process started.")
     url = "https://accounts.spotify.com/api/token"
     headers = {
@@ -48,6 +48,8 @@ def get_access_token():
     except requests.exceptions.RequestException as e:
         logging.error("Authorization Failure: %s", e)
         raise SystemExit(e) from e
+    logging.info("Authorization process completed successfully.")
+    print("---> Authorization process completed successfully.")
     return response.json()["access_token"]
 
 
@@ -59,6 +61,13 @@ def get_track_id(access_token, song_name, artist_name):
     params = {"q": query, "type": "track", "limit": 1}
     logging.info("Searching for %s...", query)
     response = requests.get(url, headers=headers, params=params, timeout=3)
+    if response.json()["tracks"]["items"] == []:
+        logging.warning("No results found for %s.", query)
+        print(f"--- WARNING: No results found for {query[:50]}.")
+        # Get user input for song name and artist name
+        song_name = input("--- Enter the song name manually: ")
+        artist_name = input("--- Enter the artist name manually: ")
+        return get_track_id(access_token, song_name, artist_name)
     return response.json()["tracks"]["items"][0]["id"]
 
 
@@ -73,13 +82,34 @@ def get_cover_image_url(access_token, track_id):
 
 def add_cover_image(song_file, image_url):
     """Add cover image to a song file"""
-    audio = MP3(song_file, ID3=ID3)
+    try:
+        audio = MP3(song_file, ID3=ID3)
+    except error:
+        logging.error("Skipping file due to an error opening: %s", song_file)
+        print(f"--- ERROR: Failed to open {song_file[:50]}. Skipping...")
+        return
 
     # Add ID3 tag if it doesn't exist
     try:
         audio.add_tags()
+        logging.info("Adding ID3 tag to %s...", song_file)
     except error:
+        # If the ID3 tag already exists, pass
         pass
+
+    # Check if the APIC tag exists
+    if "APIC:Cover" in audio:
+        logging.warning("Cover image already exists in %s.", song_file)
+        choice = input(
+            "--- Existing cover image detected. Do you want to replace it? (y/n): "
+        )
+        if choice.lower() == "n":
+            logging.info("Skipping due to user intervention %s...", song_file)
+            print("--- File skipped.")
+            return
+        logging.info("Replacing the existing cover image...")
+        print("--- Replacing the existing cover image...")
+        audio.delete()
 
     logging.info("Adding the cover image to %s...", song_file)
     audio.tags.add(
@@ -119,8 +149,14 @@ def main():
     access_token = get_access_token()
     folder = os.getcwd()  # Use the current directory that the Python file runs on
     logging.info("Looking for song files in %s...", folder)
+    print(f"---> Looking for song files in {folder}...")
+
+    # Keep count of files have valid extensions - mp3 or flac
+    file_count = 0
+
     for song_file in os.listdir(folder):
         if song_file.endswith((".mp3", ".flac")):
+            file_count += 1
             song_name = os.path.splitext(song_file)[
                 0
             ]  # Use the current file name as the song name
@@ -130,6 +166,9 @@ def main():
             track_id = get_track_id(access_token, song_name, artist_name)
             image_url = get_cover_image_url(access_token, track_id)
             add_cover_image(os.path.join(folder, song_file), image_url)
+    if file_count == 0:
+        logging.warning("No valid song files found in %s.", folder)
+        print(f"---> WARNING: No song files found in {folder}.")
     logging.info("Process completed successfully.")
     print("\n---> Process completed successfully.")
 
