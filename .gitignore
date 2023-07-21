@@ -32,5 +32,9 @@ logs/
 log/
 
 # Sample Audio Files
+songs/
 *.mp3
 *.flac
+
+# Test Files
+test.py
