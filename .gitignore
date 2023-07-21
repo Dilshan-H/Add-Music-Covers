@@ -30,3 +30,7 @@ build/
 *.log
 logs/
 log/
+
+# Sample Audio Files
+*.mp3
+*.flac
