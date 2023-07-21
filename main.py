@@ -124,9 +124,9 @@ def main():
             song_name = os.path.splitext(song_file)[
                 0
             ]  # Use the current file name as the song name
-            logging.info("Adding cover image to %s...", song_name)
+            logging.info("Processing song: %s...", song_name)
             print(f"Processing song: {song_name[:50]}")
-            artist_name = ""  # You need to get the artist name
+            artist_name = ""
             track_id = get_track_id(access_token, song_name, artist_name)
             image_url = get_cover_image_url(access_token, track_id)
             add_cover_image(os.path.join(folder, song_file), image_url)
