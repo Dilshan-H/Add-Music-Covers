@@ -36,7 +36,7 @@ This project allows you to add album cover images to your music files easily. It
    CLIENT_SECRET=your_client_secret
    ```
 
-8. Copy the song files in to the `songs` directory.
+8. Create a directory named `songs` in the project directory and add your music files to it.
 9. Run the script: `python3 main.py`
 10. The script will automatically add the album covers to the song files in the `songs` directory. Just follow the instructions in the terminal.
 
