@@ -8,7 +8,8 @@
     "Dilshan",
     "dotenv",
     "flac",
-    "levelname"
+    "levelname",
+    "venv"
   ],
   "ignoreWords": [],
   "import": []
