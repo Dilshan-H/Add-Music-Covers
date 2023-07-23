@@ -12,6 +12,7 @@ License: MIT License
 import os
 import logging
 import base64
+import sys
 import requests
 from dotenv import load_dotenv
 from mutagen.mp3 import MP3
@@ -98,7 +99,7 @@ def add_cover_image(song_file, image_url):
         pass
 
     # Check if the APIC tag exists
-    if "APIC:Cover" in audio:
+    if ("APIC:Cover" in audio) or ("APIC:" in audio):
         logging.warning("Cover image already exists in %s.", song_file)
         choice = input(
             "--- Existing cover image detected. Do you want to replace it? (y/n): "
@@ -147,25 +148,35 @@ def main():
     )
     print("Press Ctrl+C to exit the script.\n")
     access_token = get_access_token()
-    folder = os.getcwd()  # Use the current directory that the Python file runs on
+    folder = os.path.join(os.getcwd(), "songs")
     logging.info("Looking for song files in %s...", folder)
     print(f"---> Looking for song files in {folder}...")
 
     # Keep count of files have valid extensions - mp3 or flac
     file_count = 0
 
-    for song_file in os.listdir(folder):
-        if song_file.endswith((".mp3", ".flac")):
-            file_count += 1
-            song_name = os.path.splitext(song_file)[
-                0
-            ]  # Use the current file name as the song name
-            logging.info("Processing song: %s...", song_name)
-            print(f"Processing song: {song_name[:50]}")
-            artist_name = ""
-            track_id = get_track_id(access_token, song_name, artist_name)
-            image_url = get_cover_image_url(access_token, track_id)
-            add_cover_image(os.path.join(folder, song_file), image_url)
+    try:
+        for song_file in os.listdir(folder):
+            if song_file.endswith((".mp3", ".flac")):
+                file_count += 1
+                song_name = os.path.splitext(song_file)[
+                    0
+                ]  # Use the current file name as the song name
+                logging.info("Processing song: %s...", song_name)
+                print(f"Processing song: {song_name[:50]}")
+                artist_name = ""
+                track_id = get_track_id(access_token, song_name, artist_name)
+                image_url = get_cover_image_url(access_token, track_id)
+                add_cover_image(os.path.join(folder, song_file), image_url)
+    except KeyboardInterrupt:
+        logging.info("User interrupted the script.")
+        print("\n---> Stopping the script...")
+        sys.exit(0)
+    except FileNotFoundError:
+        logging.error("The 'songs' directory does not exist in the current working directory.")
+        print("--- ERROR: The 'songs' directory does not exist in the current working directory.")
+        logging.info("Stopping the script...")
+        sys.exit(1)
     if file_count == 0:
         logging.warning("No valid song files found in %s.", folder)
         print(f"---> WARNING: No song files found in {folder}.")
