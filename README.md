@@ -1,16 +1,9 @@
 # ADD-MUSIC-COVERS
 
 <center>
-<pre>
-┏━━━┓━━━━┏┓━━━━━━━━━━┓━━┏┓━
-┃┏━┓┃━━━━┃┃━━━━━━━┏━┓┃━━┛┗┓
-┃┃━┃┃┓┏┓━┛┃┓━━┓━━━┃━┃┃━┓┓┏┛
-┃┗━┛┃┃┃┃┏┓┃┫┏┓┃━━━┗━┛┃┏┛┃┃━
-┃┏━┓┃┗┛┃┗┛┃┃┗┛┃━━━┏━┓┃┃━┃┗┓
-┗┛━┗┛━━┛━━┛┛━━┛━━━┛━┗┛┛━┗━┛
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-</pre>
+
+![Banner](https://github.com/Dilshan-H/Add-Music-Covers/assets/77499497/303c6a88-008c-4a19-b97b-2aa8bad3d3b6)
+
 </center>
 
 This project allows you to add album cover images to your music files easily. It uses the Spotify API to retrieve album covers for your music files, and then adds the album covers to the music files automatically.
@@ -30,10 +23,22 @@ This project allows you to add album cover images to your music files easily. It
 
 1. Clone the repository: `git clone https://github.com/Dilshan-H/Add-Music-Covers.git`
 2. Navigate to the project directory: `cd Add-Music-Covers`
-3. Install the required dependencies: `pip install -r requirements.txt`
+3. Create a virtual environment: `python3 -m venv venv`
+4. Activate the virtual environment:
+   - Windows: `venv\Scripts\activate`
+   - Linux: `source venv/bin/activate`
+5. Install the required dependencies: `pip install -r requirements.txt`
+6. Create a Spotify application - [Find More Info](https://developer.spotify.com/documentation/web-api)
+7. Copy the Client ID and Client Secret of your Spotify application and paste them as follows within a new file named `.env` in the project directory:
 
-4. Run the script: `python main.py`
-5. Follow the prompts to select your music files and album covers.
+   ```
+   CLIENT_ID=your_client_id
+   CLIENT_SECRET=your_client_secret
+   ```
+
+8. Copy the song files in to the `songs` directory.
+9. Run the script: `python3 main.py`
+10. The script will automatically add the album covers to the song files in the `songs` directory. Just follow the instructions in the terminal.
 
 ## License & Copyrights
 
