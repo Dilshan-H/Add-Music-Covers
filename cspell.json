@@ -7,8 +7,10 @@
     "APIC",
     "Dilshan",
     "dotenv",
+    "easyid",
     "flac",
     "levelname",
+    "tracknumber",
     "venv"
   ],
   "ignoreWords": [],
