@@ -6,7 +6,15 @@
 
 </center>
 
-This project allows you to add album cover images to your music files easily. It uses the Spotify API to retrieve album covers for your music files, and then adds the album covers to the music files automatically.
+This project allows you to add album cover images and other metadata to your local music files easily. It uses the Spotify API to retrieve metadata for your music files, and then adds the album covers and other information to the music files automatically.
+
+✅ **UPDATE**: Now `ADD-MUSIC-COVERS` supports adding following metadata to your files as well.
+- Song Title
+- Artist
+- Album
+- Genre
+- Year
+- Track Number
 
 <!-- Shield Badges -->
 
