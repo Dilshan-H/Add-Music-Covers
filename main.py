@@ -10,6 +10,7 @@ License: MIT License
 """
 
 import os
+import csv
 import logging
 import base64
 import sys
@@ -73,6 +74,56 @@ def get_track_id(access_token, song_name, artist_name):
     return response.json()["tracks"]["items"][0]["id"]
 
 
+def save_metadata(metadata_list):
+    """Save metadata as a csv file on disk for further use"""
+    SAVE_FILE = "metadata-export.csv"
+    logging.info("Initiate saving metadata to the disk")
+    print("---> Saving metadata to the disk...")
+
+    fields = [
+        "id",
+        "title",
+        "artist",
+        "image_url",
+        "album",
+        "track_number",
+        "genre",
+        "year",
+    ]
+    try:
+        if not os.path.isfile(SAVE_FILE):
+            logging.info("Creating %s...", SAVE_FILE)
+            print(f"---> Creating {SAVE_FILE}...")
+            with open(SAVE_FILE, mode="w", encoding="utf-8") as file:
+                writer = csv.DictWriter(file, fieldnames=fields)
+                writer.writeheader()
+            logging.info("%s created successfully.", SAVE_FILE)
+
+        existing_rows = []
+        with open(SAVE_FILE, "r", encoding="utf-8") as file:
+            reader = csv.reader(file)
+            existing_rows = list(reader)
+
+        with open(SAVE_FILE, "a", encoding="utf-8") as file:
+            writer = csv.DictWriter(file, fieldnames=fields)
+            for metadata in metadata_list:
+                if list(metadata.values()) in existing_rows:
+                    logging.warning(
+                        "Metadata already exists in %s: %s",
+                        SAVE_FILE,
+                        metadata.get("title"),
+                    )
+                    continue
+                writer.writerow(metadata)
+        logging.info("Data successfully written to the disk.")
+    except FileNotFoundError as e:
+        logging.error("Error occurred while saving metadata: %s", e)
+        print(f"--- Unexpected error occurred while saving metadata: {e}")
+    except IOError as e:
+        logging.error("Error occurred while saving metadata: %s", e)
+        print(f"--- Unexpected error occurred while saving metadata: {e}")
+
+
 def get_metadata(access_token, track_id):
     """Get the metadata of a song from Spotify API"""
     try:
@@ -88,15 +139,16 @@ def get_metadata(access_token, track_id):
         track_genre = response.json()["artists"][0].get("genres", "")
         track_year = response.json()["album"].get("release_date", "")[:4]
         return {
-            "image_url": track_image,
+            "id": track_id,
             "title": track_title,
             "artist": track_artist,
+            "image_url": track_image,
             "album": track_album,
-            "track_number": track_number,
+            "track_number": str(track_number),
             "genre": track_genre,
             "year": track_year,
         }
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         logging.error("Error occurred while getting metadata: %s", e)
         print(f"--- ERROR: Failed to get metadata for track {track_id}. Skipping...")
         return None
@@ -105,7 +157,7 @@ def get_metadata(access_token, track_id):
 def replace_cover_image(audio, song_file, metadata):
     """Replace the cover image of a song file"""
     logging.info("Replacing the cover image...")
-    print("--- Replacing the cover image...")
+    print("--- Adding the cover image...")
     audio.delete()
     logging.info("Adding the cover image to %s...", song_file)
     audio.tags.add(
@@ -223,6 +275,7 @@ def main():
     file_count = 0
 
     try:
+        metadata_list = []
         for song_file in os.listdir(folder):
             if song_file.endswith((".mp3", ".flac")):
                 file_count += 1
@@ -234,11 +287,14 @@ def main():
                 artist_name = ""
                 track_id = get_track_id(access_token, song_name, artist_name)
                 metadata = get_metadata(access_token, track_id)
+                metadata_list.append(metadata)
                 add_metadata(
                     os.path.join(folder, song_file), metadata, replace_cover_choice
                 )
+        save_metadata(metadata_list)
     except KeyboardInterrupt:
         logging.info("User interrupted the script.")
+        save_metadata(metadata)
         print("\n---> Stopping the script...")
         sys.exit(0)
     except FileNotFoundError:

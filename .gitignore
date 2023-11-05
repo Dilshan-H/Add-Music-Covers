@@ -38,3 +38,6 @@ songs/*
 
 # Test Files
 test.py
+
+# Song List Export File
+metadata-export.csv
